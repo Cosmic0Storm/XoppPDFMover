@@ -5,7 +5,7 @@ from XoppFile import XoppFile
 import json
 import time 
 
-def scan_for_filechanges(metaData):
+def move(metaData):
     startedThreads=[]
     allPDFFiles=[]
     for (root,dirs,files) in os.walk(metaData["toppath"]):
@@ -38,13 +38,11 @@ def scan_for_filechanges(metaData):
         thread.start()
     return startedThreads
 
-
-
-if __name__ == '__main__':
+def setup_merge():
     with open("data.json","r") as f:
         jsonContent = f.read()
     metaData = json.loads(jsonContent)
-    threads = scan_for_filechanges(metaData)
+    threads = move(metaData)
     metaData["files"] = []
     for thread in threads:
         thread.join()
@@ -52,3 +50,7 @@ if __name__ == '__main__':
     with open("data.json","w",encoding="utf-8") as f:
         json.dump(metaData,f,ensure_ascii=False)
         f.close()
+
+if __name__ == '__main__':
+    file1=XoppFile({"path":"/home/arvid/Dokumente/Programms/Xopp-Merger-and-Organizer/2021-02-04-Notiz.xopp","sha256":"","pdf":""},"")
+    file1.merge_with_file({"path":"/home/arvid/Dokumente/Programms/Xopp-Merger-and-Organizer/2021-02-25-Notiz.xopp","sha256":"","pdf":""})

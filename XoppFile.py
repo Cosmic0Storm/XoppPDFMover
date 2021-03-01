@@ -11,11 +11,13 @@ class XoppFile(Thread):
     allPDFFiles = []
 
 
-    def __init__(self,metaData,allPDFFiles):
-        # metaData : dir {"filepath":"pathtofile","sha256":"sha256sum of file","pdfassigned","pathtofile"}
+    def __init__(self,metaData,args):
+        # metaData : dir {"path":"path/to/file","sha256":"sha256sum of file","pdf","pathtofile"}
         Thread.__init__(self)
         self.metaData=metaData
+        self.args = args
         self.usedPDFFile = None     
+
 
     def findPDFFilebyName(self,filename):
         if filename != "" or filename.split(".")[-1]=="pdf":
@@ -25,8 +27,6 @@ class XoppFile(Thread):
 
 
     def moveBackgroundPdf(self):
-        #print(self.metaData)
-        #print(self.allPDFFiles)
         with gzip.open(self.metaData["path"],"rb") as f:
             filecontent = f.read()
             f.close()
@@ -50,7 +50,6 @@ class XoppFile(Thread):
                         call(["cp",sourcePath,destPath])
                     self.usedPDFFile=sourcePath
                     background.set('filename',destPath)
-                    background.set('domain','attach')
                     changesHappend = True
         if changesHappend:
             xmlstr = ET.tostring(xmlRoot,encoding='utf-8',method='xml')
@@ -66,11 +65,49 @@ class XoppFile(Thread):
                 self.metaData["sha256"] = sha256(f.read()).hexdigest()
             f.close()
 
+    def merge_with_file(self,metaData):
+        if metaData["pdf"] != self.metaData["pdf"] and metaData["pdf"] != "":
+            return
         
+        with gzip.open(self.metaData["path"],"rb") as f:
+            file1 = f.read()
+            f.close()
+
+        with gzip.open(metaData["path"],"rb") as f:
+            file2 = f.read()
+            f.close()
+    
+        xmlRootFile1 = ET.fromstring(file1)
+        xmlRootFile2 = ET.fromstring(file2)
+
+        a = []
+        for xour in xmlRootFile1.iter("xournal"):
+            a.append(xour)
+        xournal = a[0]
+
+    
+        for page in xmlRootFile2.iter("page"):
+           xournal.append(page)
+
+        
+
+        xmlstr = ET.tostring(xmlRootFile1,encoding="utf-8",method='xml')
+        xml2 = ET.fromstring(xmlstr)
+        gzXml = gzip.compress(xmlstr)
+
+        print(gzXml)
+
+        with open(self.metaData["path"],"wb") as f:
+            f.write(gzXml)
+            f.close()
+
+
 
 
     def run(self):
-        try:
-            self.moveBackgroundPdf()
-        except ET.ParseError as e:
-            print(self.metaData)
+        if self.args == "--move":
+            try:
+                self.moveBackgroundPdf()
+            except ET.ParseError as e:
+                print(self.metaData)
+       

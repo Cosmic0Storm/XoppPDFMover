@@ -4,3 +4,4 @@
 the annotated pdfs seperate from the .xopp files.
 To reduce my headache, with synced directorys, this little script will save the pdf background in the same directory as the .xopp
 file associated with them (hidden).
+
