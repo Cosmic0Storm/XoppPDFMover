@@ -17,7 +17,7 @@ class XoppFile(Thread):
         self.metaData=metaData
         self.args = args
         self.usedPDFFile = None     
-
+        self.Mergequeue = []
 
     def findPDFFilebyName(self,filename):
         if filename != "" or filename.split(".")[-1]=="pdf":
@@ -65,7 +65,7 @@ class XoppFile(Thread):
                 self.metaData["sha256"] = sha256(f.read()).hexdigest()
             f.close()
 
-    def merge_with_file(self,metaData):
+    def mergeWithFile(self,metaData):
         if metaData["pdf"] != self.metaData["pdf"] and metaData["pdf"] != "":
             return
         
@@ -105,9 +105,11 @@ class XoppFile(Thread):
 
 
     def run(self):
-        if self.args == "--move":
+        if self.args == "move":
             try:
                 self.moveBackgroundPdf()
             except ET.ParseError as e:
                 print(self.metaData)
-       
+       elif self.args == "merge":
+           for filE in self.Mergequeue:
+               self.mergeWithFile(filE)_
