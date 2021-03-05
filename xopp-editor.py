@@ -51,14 +51,16 @@ def setup():
         json.dump(metaData,f,ensure_ascii=False)
         f.close()
 def mergeFilesFromSameDateinSameFolder(metaData):
-    for (root,dirs,files) in os.walk(metaData["toppath"]:
+    for (root,dirs,files) in os.walk(metaData["toppath"]):
             xoppFiles = []
             dates = []
             for filE in files:
                 if filE.split(".")[-1] == "xopp" and "autosave" not in filE:
                     xoppFiles.append(filE)
                     dates.append(filE[:10])
+            
 
+            xoppFilesfromDate = []
             datesProcessed = []
             for date in dates:
                 if dates.count(date) > 1 and date not in datesProcessed:
@@ -68,16 +70,24 @@ def mergeFilesFromSameDateinSameFolder(metaData):
                         if date in xopp:
                             xoppFilesfromDate.append(xopp)
                 datesProcessed.append(date)
-
-            rootFile = XoppFile(xoppFilesfromDate[0])
-            for a in range(1,len(xoppFilesfromDate)):
-                # add Files to merge queue
-                rootFile.Mergequeue.append(xoppFilesfromDate[a])
-            
-            rootFile.start()
+            xoppFilesfromDateMeta = []
+            for xoppFileFromDate in xoppFilesfromDate:
+                for metaFile in metaData["files"]:
+                    if xoppFileFromDate in metaFile["path"]:
+                        xoppFilesfromDateMeta.append(metaFile)
+            if len(xoppFilesfromDateMeta) > 1:
+                rootFile = XoppFile(xoppFilesfromDateMeta[0],"merge")
+                for a in range(1,len(xoppFilesfromDateMeta)):
+                    # add Files to merge queue
+                    rootFile.Mergequeue.append(xoppFilesfromDateMeta[a])
+                
+                rootFile.start()
 
 
                     
 if __name__ == '__main__':
-    file1=XoppFile({"path":"/home/arvid/Dokumente/Programms/Xopp-Merger-and-Organizer/2021-02-04-Notiz.xopp","sha256":"","pdf":""},"")
-    file1.merge_with_file({"path":"/home/arvid/Dokumente/Programms/Xopp-Merger-and-Organizer/2021-02-25-Notiz.xopp","sha256":"","pdf":""})
+    with open("data.json","r") as f:
+        jsonContent = f.read()
+    metaData = json.loads(jsonContent)
+    print(metaData)
+    mergeFilesFromSameDateinSameFolder(metaData)

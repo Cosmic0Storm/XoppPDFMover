@@ -66,6 +66,7 @@ class XoppFile(Thread):
             f.close()
 
     def mergeWithFile(self,metaData):
+        print(f"File merged:{metaData['path']}")
         if metaData["pdf"] != self.metaData["pdf"] and metaData["pdf"] != "":
             return
         
@@ -92,10 +93,8 @@ class XoppFile(Thread):
         
 
         xmlstr = ET.tostring(xmlRootFile1,encoding="utf-8",method='xml')
-        xml2 = ET.fromstring(xmlstr)
         gzXml = gzip.compress(xmlstr)
 
-        print(gzXml)
 
         with open(self.metaData["path"],"wb") as f:
             f.write(gzXml)
@@ -110,6 +109,6 @@ class XoppFile(Thread):
                 self.moveBackgroundPdf()
             except ET.ParseError as e:
                 print(self.metaData)
-       elif self.args == "merge":
+        elif self.args == "merge":
            for filE in self.Mergequeue:
-               self.mergeWithFile(filE)_
+               self.mergeWithFile(filE)
